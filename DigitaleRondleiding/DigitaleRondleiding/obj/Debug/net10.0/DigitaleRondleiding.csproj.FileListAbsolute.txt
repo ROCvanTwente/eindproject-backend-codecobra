@@ -210,3 +210,5 @@
 /home/runner/work/eindproject-backend-codecobra/eindproject-backend-codecobra/DigitaleRondleiding/DigitaleRondleiding/obj/Debug/net10.0/DigitaleRondleiding.pdb
 /home/runner/work/eindproject-backend-codecobra/eindproject-backend-codecobra/DigitaleRondleiding/DigitaleRondleiding/obj/Debug/net10.0/DigitaleRondleiding.genruntimeconfig.cache
 /home/runner/work/eindproject-backend-codecobra/eindproject-backend-codecobra/DigitaleRondleiding/DigitaleRondleiding/obj/Debug/net10.0/ref/DigitaleRondleiding.dll
+/home/runner/work/eindproject-backend-codecobra/eindproject-backend-codecobra/DigitaleRondleiding/DigitaleRondleiding/bin/Debug/net10.0/appsettings.Development.json
+/home/runner/work/eindproject-backend-codecobra/eindproject-backend-codecobra/DigitaleRondleiding/DigitaleRondleiding/bin/Debug/net10.0/appsettings.json
