@@ -4,10 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data;
 
-public class identity : IdentityDbContext<Microsoft.AspNetCore.Identity.IdentityUser>
+public class identity : DbContext
 {
-    public identity(DbContextOptions<identity> options)
-        : base(options)
+    public identity(DbContextOptions<identity> options) : base(options)
     {
     }
 
