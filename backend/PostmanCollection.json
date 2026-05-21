@@ -1,0 +1,68 @@
+{
+  "info": {
+    "name": "Backend API",
+    "description": "Postman connection voor je .NET 10 Identity Backend - Importeer dit in Postman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1. Registreer Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@jouwsite.nl\",\n  \"password\": \"AdminPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "https://localhost:5001/register",
+              "protocol": "https",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["register"]
+            }
+          }
+        },
+        {
+          "name": "2. Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@jouwsite.nl\",\n  \"password\": \"AdminPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "https://localhost:5001/login",
+              "protocol": "https",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["login"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Info (Vereist ingelogde token in Auth tab)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://localhost:5001/manage/info",
+              "protocol": "https",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["manage", "info"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
