@@ -18,6 +18,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 // Configure Identity and API Endpoints
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
 
 // Configure CORS for React frontend
