@@ -1,13 +1,15 @@
 using backend.Data;
+using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Database Connection
-// FIX: Change UseSqlite to UseSqlServer
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("identityConnection")));
+    options.UseSqlServer(connectionString, sqlOptions =>
+        sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null)));
 
 // Configure Identity Options
 builder.Services.Configure<IdentityOptions>(options =>
@@ -37,6 +39,9 @@ builder.Services.AddCors(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add QRCode Statistics Service
+builder.Services.AddScoped<IQRCodeStatisticService, QRCodeStatisticService>();
 
 var app = builder.Build();
 
