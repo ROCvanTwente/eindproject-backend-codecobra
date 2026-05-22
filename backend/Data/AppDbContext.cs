@@ -10,4 +10,8 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
         : base(options)
     {
     }
+
+    // DbSets voor QR Code statistieken
+    public DbSet<QRCode> QRCodes { get; set; }
+    public DbSet<QRCodeStatistic> QRCodeStatistics { get; set; }
 }
