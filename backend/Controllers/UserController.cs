@@ -83,9 +83,10 @@ namespace backend.Controllers
 		[HttpGet("all")]
 		public async Task<IActionResult> GetAllUsers()
 		{
-			var userList = new List<UserResponseDto>();
+			var users = await _userManager.Users.ToListAsync();
 
-			foreach (var user in _userManager.Users)
+			var userList = new List<UserResponseDto>(users.Count);
+			foreach (var user in users)
 			{
 				var roles = await _userManager.GetRolesAsync(user);
 				userList.Add(new UserResponseDto
