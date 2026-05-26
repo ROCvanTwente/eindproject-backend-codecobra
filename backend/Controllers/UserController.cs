@@ -36,14 +36,19 @@ namespace backend.Controllers
 				return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
 			}
 
-			// Add role to user if needed (requires RoleManager setup)
-			if (!string.IsNullOrEmpty(request.Role))
+			// Assign role (if provided). If role assignment fails, roll back user creation.
+			if (!string.IsNullOrWhiteSpace(request.Role))
 			{
-				var roleResult = await _userManager.AddToRoleAsync(user, request.Role);
+				var role = request.Role.Trim();
+				var roleResult = await _userManager.AddToRoleAsync(user, role);
 				if (!roleResult.Succeeded)
 				{
-					// User created but role assignment failed
-					return BadRequest(new { message = "User created but role assignment failed", errors = roleResult.Errors.Select(e => e.Description) });
+					await _userManager.DeleteAsync(user);
+					return BadRequest(new
+					{
+						message = "User created but role assignment failed (user creation rolled back)",
+						errors = roleResult.Errors.Select(e => e.Description)
+					});
 				}
 			}
 
@@ -78,9 +83,10 @@ namespace backend.Controllers
 		[HttpGet("all")]
 		public async Task<IActionResult> GetAllUsers()
 		{
-			var userList = new List<UserResponseDto>();
+			var users = await _userManager.Users.ToListAsync();
 
-			foreach (var user in _userManager.Users)
+			var userList = new List<UserResponseDto>(users.Count);
+			foreach (var user in users)
 			{
 				var roles = await _userManager.GetRolesAsync(user);
 				userList.Add(new UserResponseDto
