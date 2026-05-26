@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using backend.Models;
 
 namespace backend.Data;
 
@@ -10,4 +11,6 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
         : base(options)
     {
     }
+
+    public DbSet<StopModel> Stops { get; set; }
 }
