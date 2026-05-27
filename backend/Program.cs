@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Database Connection
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -30,16 +30,17 @@ builder.Services.AddCors(options =>
     options.AddPolicy("FrontendPolicy", policy =>
     {
         policy.WithOrigins(
-                  "http://localhost:3000", 
-                  "http://127.0.0.1:3000", 
-                  "http://localhost:5173", 
-                  "http://127.0.0.1:5173",
-                  "http://localhost:5174", 
-                  "http://127.0.0.1:5174",
-                  "https://eindproject-frontend-codecobra.vercel.app") // Production domain
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+                  "http://localhost:3000",
+                  "http://127.0.0.1:3000",
+                       "http://localhost:5173",
+                       "http://127.0.0.1:5173",
+                       "http://localhost:5174",
+                       "http://127.0.0.1:5174",
+                       "https://eindproject-frontend-codecobra.vercel.app",
+                       "https://eindproject-frontend-codecobra-c6ez.vercel.app")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
     });
 });
 
