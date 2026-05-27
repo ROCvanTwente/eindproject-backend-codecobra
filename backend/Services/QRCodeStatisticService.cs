@@ -16,21 +16,25 @@ namespace backend.Services
 
         public async Task RecordScanAsync(string qrCode)
         {
+            // Vind QRCode op basis van code
             var qrCodeEntity = await _context.QRCodes
                 .FirstOrDefaultAsync(q => q.Code == qrCode);
 
             if (qrCodeEntity != null)
             {
+                // Vind of maak statistieken
                 var statistic = await _context.QRCodeStatistics
                     .FirstOrDefaultAsync(s => s.QRCodeId == qrCodeEntity.Id);
 
                 if (statistic != null)
                 {
+                    // Bestaande: +1 scan
                     statistic.ScanCount++;
                     statistic.LastScannedAt = DateTime.UtcNow;
                 }
                 else
                 {
+                    // Nieuwe statistiek
                     statistic = new QRCodeStatistic
                     {
                         QRCodeId = qrCodeEntity.Id,

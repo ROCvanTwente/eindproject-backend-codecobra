@@ -16,6 +16,6 @@ public class QRCode
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    // Foreign Key relatie
+    // Relatie naar statistieken
     public ICollection<QRCodeStatistic> Statistics { get; set; } = new List<QRCodeStatistic>();
 }
