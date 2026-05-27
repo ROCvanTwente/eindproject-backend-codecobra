@@ -116,6 +116,26 @@ namespace backend.Controllers
 
             return Ok(stats);
         }
+
+        /// <summary>
+        /// Haal de TourStop op die aan een QR code gekoppeld is
+        /// GET /api/qrcode/{id}/tourstop
+        /// </summary>
+        [HttpGet("{id}/tourstop")]
+        public async Task<IActionResult> GetTourStopByQRCode(int id)
+        {
+            var qrCode = await _context.QRCodes.FindAsync(id);
+            if (qrCode == null)
+                return NotFound(new { message = "QR Code not found" });
+
+            var tourStop = await _context.TourStops
+                .FirstOrDefaultAsync(t => t.QRCodeId == id);
+            
+            if (tourStop == null)
+                return NotFound(new { message = "No tour stop found for this QR code" });
+
+            return Ok(tourStop);
+        }
     }
 
     // Request Models

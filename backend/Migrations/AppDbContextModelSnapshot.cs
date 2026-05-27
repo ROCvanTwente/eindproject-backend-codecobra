@@ -243,7 +243,7 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("QRCodes");
+                    b.ToTable("QRCodes", (string)null);
                 });
 
             modelBuilder.Entity("QRCodeStatistic", b =>
@@ -270,7 +270,7 @@ namespace backend.Migrations
 
                     b.HasIndex("QRCodeId");
 
-                    b.ToTable("QRCodeStatistics");
+                    b.ToTable("QRCodeStatistics", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
