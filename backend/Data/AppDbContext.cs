@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
     // DbSets voor QR Code
     public DbSet<QRCode> QRCodes { get; set; }
     public DbSet<QRCodeStatistic> QRCodeStatistics { get; set; }
+    public DbSet<TourStop> TourStops { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
