@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using backend.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
+	[Authorize(Roles = "Admin")]
 	public class UserController : ControllerBase
 	{
 		private readonly UserManager<IdentityUser> _userManager;
@@ -99,6 +102,27 @@ namespace backend.Controllers
 			}
 
 			return Ok(userList);
+		}
+
+		[HttpGet("me")]
+		[AllowAnonymous]
+		public async Task<IActionResult> GetCurrentUserInfo()
+		{
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null)
+			{
+				return Unauthorized(new { message = "Not authenticated" });
+			}
+
+			var roles = await _userManager.GetRolesAsync(user);
+			return Ok(new
+			{
+				userId = user.Id,
+				username = user.UserName,
+				email = user.Email,
+				roles = roles,
+				isAdmin = roles.Contains("Admin")
+			});
 		}
 	}
 }
