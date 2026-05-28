@@ -11,7 +11,20 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
     {
     }
 
-    // DbSets voor QR Code statistieken
+    // DbSets voor QR Code
     public DbSet<QRCode> QRCodes { get; set; }
     public DbSet<QRCodeStatistic> QRCodeStatistics { get; set; }
+    public DbSet<TourStop> TourStops { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        // QRCode -> QRCodeStatistic relatie
+        builder.Entity<QRCode>()
+            .HasMany(q => q.Statistics)
+            .WithOne(s => s.QRCode)
+            .HasForeignKey(s => s.QRCodeId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
 }
