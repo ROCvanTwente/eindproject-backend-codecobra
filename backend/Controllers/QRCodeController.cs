@@ -136,17 +136,49 @@ namespace backend.Controllers
 
             return Ok(tourStop);
         }
-    }
 
-    // Request Models
-    public class ScanRequest
-    {
-        public required string QrCode { get; set; }
-    }
+        /// <summary>
+        /// Maak een nieuwe TourStop aan
+        /// POST /api/qrcode/tourstop/add
+        /// </summary>
+        [HttpPost("tourstop/add")]
+        public async Task<IActionResult> CreateTourStop([FromBody] CreateTourStopRequest request)
+        {
+            // Validatie
+            if (request.QRCodeId <= 0)
+                return BadRequest(new { message = "QRCodeId is required" });
 
-    public class CreateQRCodeRequest
-    {
-        public required string Code { get; set; }
-        public string? Name { get; set; }
+            // Check of QRCode bestaat
+            var qrCode = await _context.QRCodes.FindAsync(request.QRCodeId);
+            if (qrCode == null)
+                return NotFound(new { message = "QR Code not found" });
+
+            // Check of TourStop al bestaat voor deze QRCode
+            var existingTourStop = await _context.TourStops
+                .FirstOrDefaultAsync(t => t.QRCodeId == request.QRCodeId);
+            if (existingTourStop != null)
+                return BadRequest(new { message = "Tour stop already exists for this QR code" });
+
+            // Maak nieuwe TourStop
+            var tourStop = new TourStop
+            {
+                QRCodeId = request.QRCodeId,
+                LocationNl = request.LocationNl,
+                LocationEn = request.LocationEn,
+                TitleNl = request.TitleNl,
+                TitleEn = request.TitleEn,
+                DescriptionNl = request.DescriptionNl,
+                DescriptionEn = request.DescriptionEn,
+                PositionX = request.PositionX,
+                PositionY = request.PositionY,
+                EstimatedDuration = request.EstimatedDuration,
+                CreatedAt = System.DateTime.UtcNow
+            };
+
+            _context.TourStops.Add(tourStop);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetTourStopByQRCode), new { id = tourStop.QRCodeId }, tourStop);
+        }
     }
 }
