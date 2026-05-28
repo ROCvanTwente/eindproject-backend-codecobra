@@ -1,114 +1,128 @@
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using backend.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class UserController : ControllerBase
-    {
-        private readonly UserManager<IdentityUser> _userManager;
+	[ApiController]
+	[Route("api/[controller]")]
+	[Authorize(Roles = "Admin")]
+	public class UserController : ControllerBase
+	{
+		private readonly UserManager<IdentityUser> _userManager;
 
-        public UserController(UserManager<IdentityUser> userManager)
-        {
-            _userManager = userManager;
-        }
+		public UserController(UserManager<IdentityUser> userManager)
+		{
+			_userManager = userManager;
+		}
 
-        /// <summary>
-        /// GET /api/user/all - Alle gebruikers ophalen
-        /// </summary>
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            try
-            {
-                var users = _userManager.Users;
-                var userList = new List<object>();
+		[HttpPost("add")]
+		public async Task<IActionResult> AddUser([FromBody] CreateUserDto request)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-                foreach (var user in users)
-                {
-                    userList.Add(new 
-                    { 
-                        id = user.Id, 
-                        email = user.Email, 
-                        userName = user.UserName 
-                    });
-                }
+			var user = new IdentityUser
+			{
+				UserName = request.Username,
+				Email = request.Email
+			};
 
-                return Ok(userList);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error fetching users: {ex.Message}");
-            }
-        }
+			var result = await _userManager.CreateAsync(user, request.Password);
 
-        /// <summary>
-        /// POST /api/user/add - Gebruiker aanmaken
-        /// </summary>
-        [HttpPost("add")]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
-                {
-                    return BadRequest("Email and password are required");
-                }
+			if (!result.Succeeded)
+			{
+				return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+			}
 
-                var user = new IdentityUser { UserName = request.Email, Email = request.Email };
-                var result = await _userManager.CreateAsync(user, request.Password);
+			// Assign role (if provided). If role assignment fails, roll back user creation.
+			if (!string.IsNullOrWhiteSpace(request.Role))
+			{
+				var role = request.Role.Trim();
+				var roleResult = await _userManager.AddToRoleAsync(user, role);
+				if (!roleResult.Succeeded)
+				{
+					await _userManager.DeleteAsync(user);
+					return BadRequest(new
+					{
+						message = "User created but role assignment failed (user creation rolled back)",
+						errors = roleResult.Errors.Select(e => e.Description)
+					});
+				}
+			}
 
-                if (!result.Succeeded)
-                {
-                    return BadRequest(new { errors = result.Errors });
-                }
+			return Ok(new { message = "User created successfully", userId = user.Id });
+		}
 
-                return Ok(new { id = user.Id, email = user.Email, message = "User created successfully" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error creating user: {ex.Message}");
-            }
-        }
+		[HttpDelete("delete/{userId}")]
+		public async Task<IActionResult> DeleteUser(string userId)
+		{
+			if (string.IsNullOrEmpty(userId))
+			{
+				return BadRequest(new { message = "User ID is required" });
+			}
 
-        /// <summary>
-        /// DELETE /api/user/delete/{id} - Gebruiker verwijderen
-        /// </summary>
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeleteUser(string id)
-        {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(id);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
+			var user = await _userManager.FindByIdAsync(userId);
 
-                var result = await _userManager.DeleteAsync(user);
-                if (!result.Succeeded)
-                {
-                    return BadRequest(new { errors = result.Errors });
-                }
+			if (user == null)
+			{
+				return NotFound(new { message = "User not found" });
+			}
 
-                return Ok(new { message = "User deleted successfully" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error deleting user: {ex.Message}");
-            }
-        }
-    }
+			var result = await _userManager.DeleteAsync(user);
 
-    // Request model
-    public class CreateUserRequest
-    {
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string Role { get; set; }
-    }
+			if (!result.Succeeded)
+			{
+				return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+			}
+
+			return Ok(new { message = "User deleted successfully" });
+		}
+
+		[HttpGet("all")]
+		public async Task<IActionResult> GetAllUsers()
+		{
+			var users = await _userManager.Users.ToListAsync();
+
+			var userList = new List<UserResponseDto>(users.Count);
+			foreach (var user in users)
+			{
+				var roles = await _userManager.GetRolesAsync(user);
+				userList.Add(new UserResponseDto
+				{
+					Id = user.Id,
+					Username = user.UserName,
+					Email = user.Email,
+					Role = roles.FirstOrDefault() ?? "Editor"
+				});
+			}
+
+			return Ok(userList);
+		}
+
+		[HttpGet("me")]
+		[AllowAnonymous]
+		public async Task<IActionResult> GetCurrentUserInfo()
+		{
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null)
+			{
+				return Unauthorized(new { message = "Not authenticated" });
+			}
+
+			var roles = await _userManager.GetRolesAsync(user);
+			return Ok(new
+			{
+				userId = user.Id,
+				username = user.UserName,
+				email = user.Email,
+				roles = roles,
+				isAdmin = roles.Contains("Admin")
+			});
+		}
+	}
 }

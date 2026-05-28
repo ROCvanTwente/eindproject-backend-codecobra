@@ -22,6 +22,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 // Identity + API Endpoints
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
 
 // CORS Configuration
