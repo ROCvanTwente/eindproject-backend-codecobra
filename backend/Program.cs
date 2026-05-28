@@ -36,8 +36,8 @@ builder.Services.AddCors(options =>
                        "http://127.0.0.1:5173",
                        "http://localhost:5174",
                        "http://127.0.0.1:5174",
-                       "https://eindproject-frontend-codecobra.vercel.app",
-                       "https://eindproject-frontend-codecobra-c6ez.vercel.app")
+                       "https://eindproject-frontend-codecobra.vercel.app", // Mobile
+                       "https://eindproject-frontend-codecobra-c6ez.vercel.app") // Web
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
