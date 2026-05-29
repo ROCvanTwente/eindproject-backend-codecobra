@@ -49,8 +49,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseRouting();                      // ? EERST
-app.UseCors("AllowFrontends");         // ? DAN CORS
+app.UseCors("AllowFrontends");
+app.UseRouting();                      
 app.UseAuthentication();
 app.UseAuthorization();
 
