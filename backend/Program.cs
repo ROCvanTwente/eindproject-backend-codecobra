@@ -55,6 +55,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapIdentityApi<IdentityUser>();
+// Map Identity endpoints with CORS enabled
+app.MapIdentityApi<IdentityUser>()
+   .RequireCors("AllowFrontends");
+
 
 app.Run();
