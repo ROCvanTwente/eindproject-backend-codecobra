@@ -17,7 +17,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 // Configure Identity and API Endpoints
 builder.Services.AddAuthorization();
-builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<AppDbContext>();
 
 // Configure CORS for React frontend
@@ -57,7 +57,7 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 // Map Identity API Endpoints
-app.MapIdentityApi<IdentityUser>();
+app.MapIdentityApi<ApplicationUser>();
 
 app.MapControllerRoute(
     name: "default",

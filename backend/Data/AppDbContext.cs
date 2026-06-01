@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data;
 
-public class AppDbContext : IdentityDbContext<IdentityUser>
+// Wijzig IdentityDbContext<IdentityUser> naar IdentityDbContext<ApplicationUser>
+public class AppDbContext : IdentityDbContext<ApplicationUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
