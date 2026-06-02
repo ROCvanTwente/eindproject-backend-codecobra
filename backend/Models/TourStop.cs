@@ -4,9 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 public class TourStop
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
-    [Required]
     [ForeignKey("QRCode")]
     public int QRCodeId { get; set; }
     public QRCode? QRCode { get; set; }
@@ -32,7 +31,11 @@ public class TourStop
     public double? PositionX { get; set; }
     public double? PositionY { get; set; }
 
-    public int? EstimatedDuration { get; set; }
+	public string? MediaUrl { get; set; }
+
+	public int? EstimatedDuration { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public int? Order { get; set; }
 }

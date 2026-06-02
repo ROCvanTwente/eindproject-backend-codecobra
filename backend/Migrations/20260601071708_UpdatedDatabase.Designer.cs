@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601071708_UpdatedDatabase")]
+    partial class UpdatedDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -275,9 +278,11 @@ namespace backend.Migrations
 
             modelBuilder.Entity("TourStop", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -301,9 +306,6 @@ namespace backend.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("MediaUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("Order")
                         .HasColumnType("int");
 
@@ -313,7 +315,7 @@ namespace backend.Migrations
                     b.Property<double?>("PositionY")
                         .HasColumnType("float");
 
-                    b.Property<int?>("QRCodeId")
+                    b.Property<int>("QRCodeId")
                         .HasColumnType("int");
 
                     b.Property<string>("TitleEn")
@@ -400,7 +402,9 @@ namespace backend.Migrations
                 {
                     b.HasOne("QRCode", "QRCode")
                         .WithMany()
-                        .HasForeignKey("QRCodeId");
+                        .HasForeignKey("QRCodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("QRCode");
                 });
