@@ -36,7 +36,7 @@ namespace backend.Controllers
 		/// GET /api/stops/{id}
 		/// </summary>
 		[HttpGet("{id}")]
-		public async Task<IActionResult> GetStopById(Guid id)
+		public async Task<IActionResult> GetStopById(int id)
 		{
 			var stop = await _context.TourStops.FindAsync(id);
 			if (stop == null)
@@ -93,7 +93,6 @@ namespace backend.Controllers
 			// 5. Maak de nieuwe tour stop aan
 			var tourStop = new TourStop
 			{
-				Id = Guid.NewGuid(),
 				QRCodeId = generatedDatabaseId, // Hier vullen we de int (1) in!
 				LocationNl = request.LocationNl,
 				LocationEn = request.LocationEn,
@@ -121,7 +120,7 @@ namespace backend.Controllers
 		/// PUT /api/stops/{id}
 		/// </summary>
 		[HttpPut("{id}")]
-		public async Task<IActionResult> UpdateStop(Guid id, [FromForm] UpdateTourStopRequest request)
+		public async Task<IActionResult> UpdateStop(int id, [FromForm] UpdateTourStopRequest request)
 		{
 			var stop = await _context.TourStops.FindAsync(id);
 			if (stop == null)
@@ -164,7 +163,35 @@ namespace backend.Controllers
 			if (request.PositionX.HasValue) stop.PositionX = request.PositionX;
 			if (request.PositionY.HasValue) stop.PositionY = request.PositionY;
 			if (request.EstimatedDuration.HasValue) stop.EstimatedDuration = request.EstimatedDuration;
+			if (request.MediaUrl != null)
+			{
+				stop.MediaUrl = string.IsNullOrWhiteSpace(request.MediaUrl)
+					? null
+					: request.MediaUrl.Trim();
+			}
 
+			stop.UpdatedAt = System.DateTime.UtcNow;
+
+			_context.TourStops.Update(stop);
+			await _context.SaveChangesAsync();
+
+			return Ok(stop);
+		}
+
+		/// <summary>
+		/// Update alleen de media URL van een stop
+		/// PUT /api/stops/{id}/media
+		/// </summary>
+		[HttpPut("{id}/media")]
+		public async Task<IActionResult> UpdateStopMedia(int id, [FromBody] UpdateStopMediaRequest request)
+		{
+			var stop = await _context.TourStops.FindAsync(id);
+			if (stop == null)
+				return NotFound(new { message = "Tour stop not found" });
+
+			stop.MediaUrl = string.IsNullOrWhiteSpace(request.MediaUrl)
+				? null
+				: request.MediaUrl.Trim();
 			stop.UpdatedAt = System.DateTime.UtcNow;
 
 			_context.TourStops.Update(stop);
@@ -178,7 +205,7 @@ namespace backend.Controllers
 		/// DELETE /api/stops/{id}
 		/// </summary>
 		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteStop(Guid id)
+		public async Task<IActionResult> DeleteStop(int id)
 		{
 			var stop = await _context.TourStops.FindAsync(id);
 			if (stop == null)
@@ -213,6 +240,11 @@ namespace backend.Controllers
 			await _context.SaveChangesAsync(); // SQL Server genereert nu automatisch Id = 1
 
 			return newQrCode.Id; // Geeft de kersverse INT id (1) terug
+		}
+
+		public class UpdateStopMediaRequest
+		{
+			public string? MediaUrl { get; set; }
 		}
 	}
 }

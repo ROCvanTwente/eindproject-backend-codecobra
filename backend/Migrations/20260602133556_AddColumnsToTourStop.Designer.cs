@@ -12,8 +12,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260601071112_UpdatedTourStop")]
-    partial class UpdatedTourStop
+    [Migration("20260602133556_AddColumnsToTourStop")]
+    partial class AddColumnsToTourStop
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -278,11 +278,9 @@ namespace backend.Migrations
 
             modelBuilder.Entity("TourStop", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -305,6 +303,9 @@ namespace backend.Migrations
                     b.Property<string>("LocationNl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("MediaUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Order")
                         .HasColumnType("int");
@@ -334,6 +335,44 @@ namespace backend.Migrations
                     b.HasIndex("QRCodeId");
 
                     b.ToTable("TourStops");
+                });
+
+            modelBuilder.Entity("backend.Models.Media", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("QRCodeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QRCodeId");
+
+                    b.ToTable("Medias");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -409,8 +448,20 @@ namespace backend.Migrations
                     b.Navigation("QRCode");
                 });
 
+            modelBuilder.Entity("backend.Models.Media", b =>
+                {
+                    b.HasOne("QRCode", "QRCode")
+                        .WithMany("Medias")
+                        .HasForeignKey("QRCodeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("QRCode");
+                });
+
             modelBuilder.Entity("QRCode", b =>
                 {
+                    b.Navigation("Medias");
+
                     b.Navigation("Statistics");
                 });
 #pragma warning restore 612, 618

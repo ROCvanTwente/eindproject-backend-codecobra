@@ -313,7 +313,7 @@ namespace backend.Migrations
                     b.Property<double?>("PositionY")
                         .HasColumnType("float");
 
-                    b.Property<int?>("QRCodeId")
+                    b.Property<int>("QRCodeId")
                         .HasColumnType("int");
 
                     b.Property<string>("TitleEn")
@@ -332,6 +332,44 @@ namespace backend.Migrations
                     b.HasIndex("QRCodeId");
 
                     b.ToTable("TourStops");
+                });
+
+            modelBuilder.Entity("backend.Models.Media", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("QRCodeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QRCodeId");
+
+                    b.ToTable("Medias");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -400,13 +438,27 @@ namespace backend.Migrations
                 {
                     b.HasOne("QRCode", "QRCode")
                         .WithMany()
-                        .HasForeignKey("QRCodeId");
+                        .HasForeignKey("QRCodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QRCode");
+                });
+
+            modelBuilder.Entity("backend.Models.Media", b =>
+                {
+                    b.HasOne("QRCode", "QRCode")
+                        .WithMany("Medias")
+                        .HasForeignKey("QRCodeId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("QRCode");
                 });
 
             modelBuilder.Entity("QRCode", b =>
                 {
+                    b.Navigation("Medias");
+
                     b.Navigation("Statistics");
                 });
 #pragma warning restore 612, 618

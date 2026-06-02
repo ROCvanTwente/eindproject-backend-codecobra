@@ -2,6 +2,7 @@ using backend.Data;
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,8 @@ builder.Services.AddCors(options =>
         builder.WithOrigins(
             "https://eindproject-frontend-codecobra.vercel.app",      // Mobile
             "https://eindproject-frontend-codecobra-c6ez.vercel.app",   // Web
-            "http://localhost:5173"                                    // Local
+            "http://localhost:5173",
+            "http://localhost:5173"
         )
         .AllowAnyMethod()
         .AllowAnyHeader()
@@ -50,8 +52,18 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseRouting();               // ? EERST routing
-app.UseCors("AllowFrontends");  // ? DAN CORS
+
+// Maak uploads folder toegankelijk
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(uploadsPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
+
+app.UseRouting();               // ✅ EERST routing
+app.UseCors("AllowFrontends");  // ✅ DAN CORS
 app.UseAuthentication();
 app.UseAuthorization();
 
