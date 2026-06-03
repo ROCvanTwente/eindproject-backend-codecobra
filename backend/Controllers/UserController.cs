@@ -83,7 +83,6 @@ namespace backend.Controllers
 		}
 
 		[HttpGet("all")]
-		[Authorize]  // ← Voeg dit toe
 		public async Task<IActionResult> GetAllUsers()
 		{
 			var users = await _userManager.Users.ToListAsync();
