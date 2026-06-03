@@ -8,7 +8,6 @@ namespace backend.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	[Authorize(Roles = "Admin")]
 	public class UserController : ControllerBase
 	{
 		private readonly UserManager<IdentityUser> _userManager;
@@ -84,6 +83,7 @@ namespace backend.Controllers
 		}
 
 		[HttpGet("all")]
+		[Authorize]  // ← Voeg dit toe
 		public async Task<IActionResult> GetAllUsers()
 		{
 			var users = await _userManager.Users.ToListAsync();
