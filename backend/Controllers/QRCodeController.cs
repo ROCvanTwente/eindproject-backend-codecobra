@@ -172,7 +172,9 @@ namespace backend.Controllers
                 PositionX = request.PositionX,
                 PositionY = request.PositionY,
                 EstimatedDuration = request.EstimatedDuration,
-                CreatedAt = System.DateTime.UtcNow
+                MediaUrl = request.MediaUrl,
+                CreatedAt = System.DateTime.UtcNow,
+                UpdatedAt = System.DateTime.UtcNow
             };
 
             _context.TourStops.Add(tourStop);
