@@ -10,5 +10,5 @@ public class UpdateTourStopRequest
 	public double? PositionX { get; set; }
     public double? PositionY { get; set; }
     public int? EstimatedDuration { get; set; }
-    public int? QRCodeId { get; set; }
+    public string? QRCodeId { get; set; }
 }

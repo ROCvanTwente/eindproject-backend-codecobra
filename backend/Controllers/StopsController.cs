@@ -126,31 +126,58 @@ namespace backend.Controllers
 			if (stop == null)
 				return NotFound(new { message = "Tour stop not found" });
 
-			// Lees de string waarde uit de FormData
-			string qrCodeString = Request.Form["qrCodeId"].ToString();
-
-			// Zoek op basis van de tekstcode
-			var qrCode = await _context.QRCodes.FirstOrDefaultAsync(q => q.Code == qrCodeString);
-
-			if (qrCode == null)
+			if (ModelState.ContainsKey(nameof(request.QRCodeId)))
 			{
-				// Als de ingevulde code nog niet bestaat, maken we hem aan tijdens de update
-				qrCode = new QRCode
-				{
-					Code = qrCodeString,
-					Name = request.TitleNl ?? stop.TitleNl,
-					CreatedAt = System.DateTime.UtcNow
-				};
-				_context.QRCodes.Add(qrCode);
-				await _context.SaveChangesAsync();
+				ModelState.Remove(nameof(request.QRCodeId));
 			}
-			// Check of deze code al bezet is door een ANDERE stop
-			var existingStop = await _context.TourStops
-				.FirstOrDefaultAsync(t => t.QRCodeId == qrCode.Id && t.Id != id);
 
-			if (existingStop != null)
-				return BadRequest(new { message = "Deze QR code is al gekoppeld aan een andere tour stop" });
-				stop.QRCodeId = qrCode.Id;
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			// Lees de string waarde uit de FormData
+			string qrCodeString = Request.Form["qrCode"].ToString()?.Trim();
+			if (string.IsNullOrWhiteSpace(qrCodeString))
+			{
+				qrCodeString = Request.Form["qrCodeId"].ToString()?.Trim();
+			}
+
+			if (string.IsNullOrWhiteSpace(qrCodeString))
+			{
+				qrCodeString = request.QRCodeId?.Trim();
+			}
+
+			if (!string.IsNullOrWhiteSpace(qrCodeString))
+			{
+				// Zoek op basis van de tekstcode
+				var qrCode = await _context.QRCodes.FirstOrDefaultAsync(q => q.Code == qrCodeString);
+
+				if (qrCode == null)
+				{
+					// Als de ingevulde code nog niet bestaat, maken we hem aan tijdens de update
+					qrCode = new QRCode
+					{
+						Code = qrCodeString,
+						Name = request.TitleNl ?? stop.TitleNl,
+						CreatedAt = System.DateTime.UtcNow
+					};
+					_context.QRCodes.Add(qrCode);
+					await _context.SaveChangesAsync();
+				}
+
+				// Alleen op uniekheid checken als de koppeling echt verandert.
+				if (stop.QRCodeId != qrCode.Id)
+				{
+					var existingStop = await _context.TourStops
+						.FirstOrDefaultAsync(t => t.QRCodeId == qrCode.Id && t.Id != id);
+
+					if (existingStop != null)
+						return BadRequest(new { message = "Deze QR code is al gekoppeld aan een andere tour stop" });
+
+					stop.QRCodeId = qrCode.Id;
+				}
+			}
 
 			// Update overige velden
 			if (!string.IsNullOrEmpty(request.LocationNl)) stop.LocationNl = request.LocationNl;
