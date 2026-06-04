@@ -126,33 +126,60 @@ namespace backend.Controllers
 			if (stop == null)
 				return NotFound(new { message = "Tour stop not found" });
 
-			// Lees de string waarde uit de FormData
-			string qrCodeString = Request.Form["qrCodeId"].ToString();
-
-			// Zoek op basis van de tekstcode
-			var qrCode = await _context.QRCodes.FirstOrDefaultAsync(q => q.Code == qrCodeString);
-
-			if (qrCode == null)
+			if (ModelState.ContainsKey(nameof(request.QRCodeId)))
 			{
-				// Als de ingevulde code nog niet bestaat, maken we hem aan tijdens de update
-				qrCode = new QRCode
-				{
-					Code = qrCodeString,
-					Name = request.TitleNl ?? stop.TitleNl,
-					CreatedAt = System.DateTime.UtcNow
-				};
-				_context.QRCodes.Add(qrCode);
-				await _context.SaveChangesAsync();
+				ModelState.Remove(nameof(request.QRCodeId));
 			}
-			// Check of deze code al bezet is door een ANDERE stop
-			var existingStop = await _context.TourStops
-				.FirstOrDefaultAsync(t => t.QRCodeId == qrCode.Id && t.Id != id);
 
-			if (existingStop != null)
-				return BadRequest(new { message = "Deze QR code is al gekoppeld aan een andere tour stop" });
-				stop.QRCodeId = qrCode.Id;
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-			// Update overige velden
+			// Optioneel: QR code updaten (alleen als opgegeven en anders dan huidige)
+			string qrCodeString = Request.Form["qrCode"].ToString()?.Trim();
+			if (string.IsNullOrWhiteSpace(qrCodeString))
+			{
+				qrCodeString = request.QRCodeId?.Trim();
+			}
+
+			if (!string.IsNullOrWhiteSpace(qrCodeString))
+			{
+				// Zoek QR code op
+				var qrCode = await _context.QRCodes.FirstOrDefaultAsync(q => q.Code == qrCodeString);
+
+				if (qrCode == null)
+				{
+					// Maak QR code aan als die niet bestaat
+					qrCode = new QRCode
+					{
+						Code = qrCodeString,
+						Name = request.TitleNl ?? qrCodeString,
+						CreatedAt = System.DateTime.UtcNow
+					};
+					_context.QRCodes.Add(qrCode);
+					await _context.SaveChangesAsync();
+				}
+
+				// Safety check: alleen koppelen als die QR code nog vrij is OF al aan dit stop gekoppeld is
+				if (stop.QRCodeId != qrCode.Id)
+				{
+					var otherStopWithQrCode = await _context.TourStops
+						.Where(t => t.QRCodeId == qrCode.Id && t.Id != id)
+						.FirstOrDefaultAsync();
+
+					if (otherStopWithQrCode != null)
+					{
+						// QR code is al in gebruik - hou huidige koppeling
+						return BadRequest(new { message = $"QR code '{qrCodeString}' is al in gebruik door ander stop. Koppeling niet gewijzigd." });
+					}
+
+					// OK - koppel de QR code
+					stop.QRCodeId = qrCode.Id;
+				}
+			}
+
+			// Update alle andere velden veilig
 			if (!string.IsNullOrEmpty(request.LocationNl)) stop.LocationNl = request.LocationNl;
 			if (!string.IsNullOrEmpty(request.LocationEn)) stop.LocationEn = request.LocationEn;
 			if (!string.IsNullOrEmpty(request.TitleNl)) stop.TitleNl = request.TitleNl;
@@ -160,14 +187,12 @@ namespace backend.Controllers
 			if (!string.IsNullOrEmpty(request.DescriptionNl)) stop.DescriptionNl = request.DescriptionNl;
 			if (!string.IsNullOrEmpty(request.DescriptionEn)) stop.DescriptionEn = request.DescriptionEn;
 
-			if (request.PositionX.HasValue) stop.PositionX = request.PositionX;
-			if (request.PositionY.HasValue) stop.PositionY = request.PositionY;
-			if (request.EstimatedDuration.HasValue) stop.EstimatedDuration = request.EstimatedDuration;
+			if (request.PositionX.HasValue && request.PositionX >= 0) stop.PositionX = request.PositionX;
+			if (request.PositionY.HasValue && request.PositionY >= 0) stop.PositionY = request.PositionY;
+			if (request.EstimatedDuration.HasValue && request.EstimatedDuration > 0) stop.EstimatedDuration = request.EstimatedDuration;
 			if (request.MediaUrl != null)
 			{
-				stop.MediaUrl = string.IsNullOrWhiteSpace(request.MediaUrl)
-					? null
-					: request.MediaUrl.Trim();
+				stop.MediaUrl = string.IsNullOrWhiteSpace(request.MediaUrl) ? null : request.MediaUrl.Trim();
 			}
 
 			stop.UpdatedAt = System.DateTime.UtcNow;
