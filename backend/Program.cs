@@ -32,9 +32,11 @@ builder.Services.AddCors(options =>
             "https://eindproject-frontend-codecobra-c6ez.vercel.app",   // Web
             "http://localhost:5173",
             "http://localhost:5173",
-            "http://localhost:5000"
+            "http://localhost:5000",
+            "http://10.0.2.2:5018"
 
         )
+		)
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials();
@@ -52,7 +54,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Mobile wilt nog niet werken met HTTPS, dus tijdelijk uitgezet
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // Maak uploads folder toegankelijk
