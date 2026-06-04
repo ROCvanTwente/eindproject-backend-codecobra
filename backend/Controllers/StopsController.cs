@@ -136,13 +136,8 @@ namespace backend.Controllers
 				return BadRequest(ModelState);
 			}
 
-			// Lees de string waarde uit de FormData
+			// Optioneel: QR code updaten (alleen als opgegeven en anders dan huidige)
 			string qrCodeString = Request.Form["qrCode"].ToString()?.Trim();
-			if (string.IsNullOrWhiteSpace(qrCodeString))
-			{
-				qrCodeString = Request.Form["qrCodeId"].ToString()?.Trim();
-			}
-
 			if (string.IsNullOrWhiteSpace(qrCodeString))
 			{
 				qrCodeString = request.QRCodeId?.Trim();
@@ -150,36 +145,41 @@ namespace backend.Controllers
 
 			if (!string.IsNullOrWhiteSpace(qrCodeString))
 			{
-				// Zoek op basis van de tekstcode
+				// Zoek QR code op
 				var qrCode = await _context.QRCodes.FirstOrDefaultAsync(q => q.Code == qrCodeString);
 
 				if (qrCode == null)
 				{
-					// Als de ingevulde code nog niet bestaat, maken we hem aan tijdens de update
+					// Maak QR code aan als die niet bestaat
 					qrCode = new QRCode
 					{
 						Code = qrCodeString,
-						Name = request.TitleNl ?? stop.TitleNl,
+						Name = request.TitleNl ?? qrCodeString,
 						CreatedAt = System.DateTime.UtcNow
 					};
 					_context.QRCodes.Add(qrCode);
 					await _context.SaveChangesAsync();
 				}
 
-				// Alleen op uniekheid checken als de koppeling echt verandert.
+				// Safety check: alleen koppelen als die QR code nog vrij is OF al aan dit stop gekoppeld is
 				if (stop.QRCodeId != qrCode.Id)
 				{
-					var existingStop = await _context.TourStops
-						.FirstOrDefaultAsync(t => t.QRCodeId == qrCode.Id && t.Id != id);
+					var otherStopWithQrCode = await _context.TourStops
+						.Where(t => t.QRCodeId == qrCode.Id && t.Id != id)
+						.FirstOrDefaultAsync();
 
-					if (existingStop != null)
-						return BadRequest(new { message = "Deze QR code is al gekoppeld aan een andere tour stop" });
+					if (otherStopWithQrCode != null)
+					{
+						// QR code is al in gebruik - hou huidige koppeling
+						return BadRequest(new { message = $"QR code '{qrCodeString}' is al in gebruik door ander stop. Koppeling niet gewijzigd." });
+					}
 
+					// OK - koppel de QR code
 					stop.QRCodeId = qrCode.Id;
 				}
 			}
 
-			// Update overige velden
+			// Update alle andere velden veilig
 			if (!string.IsNullOrEmpty(request.LocationNl)) stop.LocationNl = request.LocationNl;
 			if (!string.IsNullOrEmpty(request.LocationEn)) stop.LocationEn = request.LocationEn;
 			if (!string.IsNullOrEmpty(request.TitleNl)) stop.TitleNl = request.TitleNl;
@@ -187,14 +187,12 @@ namespace backend.Controllers
 			if (!string.IsNullOrEmpty(request.DescriptionNl)) stop.DescriptionNl = request.DescriptionNl;
 			if (!string.IsNullOrEmpty(request.DescriptionEn)) stop.DescriptionEn = request.DescriptionEn;
 
-			if (request.PositionX.HasValue) stop.PositionX = request.PositionX;
-			if (request.PositionY.HasValue) stop.PositionY = request.PositionY;
-			if (request.EstimatedDuration.HasValue) stop.EstimatedDuration = request.EstimatedDuration;
+			if (request.PositionX.HasValue && request.PositionX >= 0) stop.PositionX = request.PositionX;
+			if (request.PositionY.HasValue && request.PositionY >= 0) stop.PositionY = request.PositionY;
+			if (request.EstimatedDuration.HasValue && request.EstimatedDuration > 0) stop.EstimatedDuration = request.EstimatedDuration;
 			if (request.MediaUrl != null)
 			{
-				stop.MediaUrl = string.IsNullOrWhiteSpace(request.MediaUrl)
-					? null
-					: request.MediaUrl.Trim();
+				stop.MediaUrl = string.IsNullOrWhiteSpace(request.MediaUrl) ? null : request.MediaUrl.Trim();
 			}
 
 			stop.UpdatedAt = System.DateTime.UtcNow;
