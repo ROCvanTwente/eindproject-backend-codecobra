@@ -15,7 +15,23 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false;
+	options.SignIn.RequireConfirmedAccount = false;
+
+	// Password policy
+	options.Password.RequireDigit = true;
+	options.Password.RequiredLength = 8;
+	options.Password.RequireNonAlphanumeric = true;
+	options.Password.RequireUppercase = true;
+	options.Password.RequireLowercase = true;
+	options.Password.RequiredUniqueChars = 1;
+
+	// Lockout policy
+	options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+	options.Lockout.MaxFailedAccessAttempts = 5;
+	options.Lockout.AllowedForNewUsers = true;
+
+	// User policy
+	options.User.RequireUniqueEmail = true;
 });
 
 builder.Services.AddAuthorization();
@@ -25,22 +41,18 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontends", builder =>
-    {
-        builder.WithOrigins(
-            "https://eindproject-frontend-codecobra.vercel.app",      // Mobile
-            "https://eindproject-frontend-codecobra-c6ez.vercel.app",   // Web
-            "http://localhost:5173",
-            "http://localhost:5173",
-            "http://localhost:5000",
-            "http://10.0.2.2:5018"
+	var allowedOrigins = app.Environment.IsDevelopment()
+		? new[] { "http://localhost:5173", "http://localhost:5174", "http://localhost:5000", "http://10.0.2.2:5018" }
+		: new[] { "https://eindproject-frontend-codecobra.vercel.app", "https://eindproject-frontend-codecobra-c6ez.vercel.app" };
 
-        )
-		)
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
-    });
+	options.AddPolicy("AllowFrontends", builder =>
+	{
+		builder
+			.WithOrigins(allowedOrigins)
+			.AllowAnyMethod()
+			.AllowAnyHeader()
+			.AllowCredentials();
+	});
 });
 
 builder.Services.AddControllersWithViews();
@@ -50,12 +62,11 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+	app.UseExceptionHandler("/Home/Error");
+	app.UseHsts();
 }
 
-// Mobile wilt nog niet werken met HTTPS, dus tijdelijk uitgezet
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // Maak uploads folder toegankelijk
