@@ -104,10 +104,20 @@ namespace backend.Controllers
 				return BadRequest(ModelState);
 			}
 
+			var username = request.Username?.Trim();
+			if (string.IsNullOrWhiteSpace(username))
+			{
+				return BadRequest(new { message = "Username is required" });
+			}
+
+			var email = string.IsNullOrWhiteSpace(request.Email)
+				? $"{username.ToLowerInvariant()}@codecobra.local"
+				: request.Email.Trim();
+
 			var user = new IdentityUser
 			{
-				UserName = request.Username,
-				Email = request.Email
+				UserName = username,
+				Email = email
 			};
 
 			var result = await _userManager.CreateAsync(user, request.Password);

@@ -7,9 +7,7 @@ namespace backend.DTOs
         [Required]
         public string Username { get; set; } = default!;
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = default!;
+        public string? Email { get; set; }
 
         [Required]
         [MinLength(6)]
