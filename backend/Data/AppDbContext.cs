@@ -35,5 +35,12 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
             .WithOne(m => m.QRCode)
             .HasForeignKey(m => m.QRCodeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // QRCode -> TourStop relatie
+        builder.Entity<QRCode>()
+            .HasMany<TourStop>()
+            .WithOne(t => t.QRCode)
+            .HasForeignKey(t => t.QRCodeId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

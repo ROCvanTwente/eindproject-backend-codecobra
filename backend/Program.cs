@@ -41,7 +41,7 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
 
 builder.Services.AddCors(options =>
 {
-	var allowedOrigins = app.Environment.IsDevelopment()
+	var allowedOrigins = builder.Environment.IsDevelopment()
 		? new[] { "http://localhost:5173", "http://localhost:5174", "http://localhost:5000", "http://10.0.2.2:5018" }
 		: new[] { "https://eindproject-frontend-codecobra.vercel.app", "https://eindproject-frontend-codecobra-c6ez.vercel.app" };
 
