@@ -17,6 +17,7 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
     public DbSet<QRCodeStatistic> QRCodeStatistics { get; set; }
     public DbSet<TourStop> TourStops { get; set; }
     public DbSet<Media> Medias { get; set; }
+    public DbSet<AppSetting> AppSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -42,5 +43,10 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
             .WithOne(t => t.QRCode)
             .HasForeignKey(t => t.QRCodeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // AppSetting: Key moet uniek zijn
+        builder.Entity<AppSetting>()
+            .HasIndex(a => a.Key)
+            .IsUnique();
     }
 }
