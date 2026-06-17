@@ -17,6 +17,7 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
     public DbSet<QRCodeStatistic> QRCodeStatistics { get; set; }
     public DbSet<TourStop> TourStops { get; set; }
     public DbSet<Media> Medias { get; set; }
+    public DbSet<UserActionLog> UserActionLogs { get; internal set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
