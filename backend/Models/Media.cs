@@ -24,4 +24,8 @@ public class Media
     // Relatie naar QRCode (optioneel)
     public int? QRCodeId { get; set; }
     public QRCode? QRCode { get; set; }
+
+    // Relatie naar ExtraInformationMedia (optioneel)
+    public int? ExtraInformationId { get; set; }
+    public ExtraInformation? ExtraInformation { get; set; }
 }

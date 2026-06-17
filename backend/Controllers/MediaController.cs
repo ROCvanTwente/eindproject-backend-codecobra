@@ -22,7 +22,10 @@ namespace backend.Controllers
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadMedia(IFormFile file, int? qrCodeId = null)
+        public async Task<IActionResult> UploadMedia(
+            IFormFile file,
+            int? qrCodeId = null,
+            int? extraInformationId = null)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("Geen bestand geselecteerd");
@@ -65,7 +68,8 @@ namespace backend.Controllers
                     FilePath = $"/uploads/{uniqueFileName}",
                     FileType = file.ContentType ?? "application/octet-stream",
                     FileSize = file.Length,
-                    QRCodeId = qrCodeId
+                    QRCodeId = qrCodeId,
+                    ExtraInformationId = extraInformationId
                 };
 
                 _context.Medias.Add(media);

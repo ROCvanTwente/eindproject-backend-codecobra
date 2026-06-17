@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260615071849_extrainfomigration")]
+    partial class extrainfomigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -360,7 +363,7 @@ namespace backend.Migrations
                     b.ToTable("ExtraInformations");
                 });
 
-            modelBuilder.Entity("backend.Models.Media", b =>
+            modelBuilder.Entity("backend.Models.ExtraInformationMedia", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -368,8 +371,31 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ExtraInformationId")
+                    b.Property<int>("ExtraInformationId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExtraInformationId");
+
+                    b.ToTable("ExtraInformationMedia");
+                });
+
+            modelBuilder.Entity("backend.Models.Media", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -395,8 +421,6 @@ namespace backend.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ExtraInformationId");
 
                     b.HasIndex("QRCodeId");
 
@@ -476,19 +500,23 @@ namespace backend.Migrations
                     b.Navigation("QRCode");
                 });
 
-            modelBuilder.Entity("backend.Models.Media", b =>
+            modelBuilder.Entity("backend.Models.ExtraInformationMedia", b =>
                 {
                     b.HasOne("backend.Models.ExtraInformation", "ExtraInformation")
                         .WithMany("Media")
                         .HasForeignKey("ExtraInformationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
+                    b.Navigation("ExtraInformation");
+                });
+
+            modelBuilder.Entity("backend.Models.Media", b =>
+                {
                     b.HasOne("QRCode", "QRCode")
                         .WithMany("Medias")
                         .HasForeignKey("QRCodeId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("ExtraInformation");
 
                     b.Navigation("QRCode");
                 });

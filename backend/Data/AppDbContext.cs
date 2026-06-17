@@ -12,6 +12,8 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
     {
     }
 
+    public DbSet<ExtraInformation> ExtraInformations { get; set; }
+
     // DbSets voor QR Code
     public DbSet<QRCode> QRCodes { get; set; }
     public DbSet<QRCodeStatistic> QRCodeStatistics { get; set; }
@@ -22,25 +24,32 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
     {
         base.OnModelCreating(builder);
 
-        // QRCode -> QRCodeStatistic relatie
+        // QRCode -> QRCodeStatistic
         builder.Entity<QRCode>()
             .HasMany(q => q.Statistics)
             .WithOne(s => s.QRCode)
             .HasForeignKey(s => s.QRCodeId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // QRCode -> Media relatie
+        // QRCode -> Media
         builder.Entity<QRCode>()
             .HasMany(q => q.Medias)
             .WithOne(m => m.QRCode)
             .HasForeignKey(m => m.QRCodeId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // QRCode -> TourStop relatie
+        // QRCode -> TourStop
         builder.Entity<QRCode>()
             .HasMany<TourStop>()
             .WithOne(t => t.QRCode)
             .HasForeignKey(t => t.QRCodeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ExtraInformation -> Media
+        builder.Entity<ExtraInformation>()
+            .HasMany(e => e.Media)
+            .WithOne(m => m.ExtraInformation)
+            .HasForeignKey(m => m.ExtraInformationId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
