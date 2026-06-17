@@ -17,8 +17,9 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
     public DbSet<QRCodeStatistic> QRCodeStatistics { get; set; }
     public DbSet<TourStop> TourStops { get; set; }
     public DbSet<Media> Medias { get; set; }
+	public DbSet<Pronunciation> Pronunciations { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder builder)
+	protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
@@ -34,6 +35,13 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
             .HasMany(q => q.Medias)
             .WithOne(m => m.QRCode)
             .HasForeignKey(m => m.QRCodeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // QRCode -> TourStop relatie
+        builder.Entity<QRCode>()
+            .HasMany<TourStop>()
+            .WithOne(t => t.QRCode)
+            .HasForeignKey(t => t.QRCodeId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
