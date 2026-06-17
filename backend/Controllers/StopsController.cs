@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using backend.Models;
 
 namespace backend.Controllers
 {
@@ -26,6 +27,7 @@ namespace backend.Controllers
 		{
 			var stops = await _context.TourStops
 				.Include(t => t.QRCode)
+				.OrderBy(t => t.Order)
 				.ToListAsync();
 
 			return Ok(stops);
@@ -241,6 +243,34 @@ namespace backend.Controllers
 
 			return Ok(new { message = "Tour stop deleted successfully" });
 		}
+
+[HttpPut("reorder-all")]
+public async Task<IActionResult> ReorderAllStops([FromBody] List<int> orderedIds)
+{
+    if (orderedIds == null || !orderedIds.Any())
+        return BadRequest(new { message = "No IDs provided" });
+
+    // Fetch all stops that match the passed IDs
+    var stops = await _context.TourStops
+        .Where(s => orderedIds.Contains(s.Id))
+        .ToListAsync();
+
+    // Update the order property based on its position in the incoming array
+    for (int i = 0; i < orderedIds.Count; i++)
+    {
+        var stop = stops.FirstOrDefault(s => s.Id == orderedIds[i]);
+        if (stop != null)
+        {
+            stop.Order = i + 1; // 1-based indexing
+            stop.UpdatedAt = System.DateTime.UtcNow;
+        }
+    }
+
+    _context.TourStops.UpdateRange(stops);
+    await _context.SaveChangesAsync();
+
+    return Ok(new { message = "Bulk order updated successfully" });
+}
 
 		private async Task<int> EnsureQrCodeExistsAsync(string codeString, string defaultName)
 		{
