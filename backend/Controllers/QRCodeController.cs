@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Data;
 using backend.Services;
 using Microsoft.EntityFrameworkCore;
+using backend.Models;
 
 namespace backend.Controllers
 {
@@ -181,6 +182,65 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetTourStopByQRCode), new { id = tourStop.QRCodeId }, tourStop);
+        }
+        private const string LandingPageUrlKey = "LandingPageUrl";
+
+        /// <summary>
+        /// Haal de opgeslagen landingspagina-URL op
+        /// GET /api/qrcode/landing-url
+        /// </summary>
+        [HttpGet("landing-url")]
+        public async Task<IActionResult> GetLandingUrl()
+        {
+            var setting = await _context.AppSettings
+                .FirstOrDefaultAsync(s => s.Key == LandingPageUrlKey);
+
+            return Ok(new
+            {
+                url = setting?.Value ?? "",
+                updatedAt = setting?.UpdatedAt
+            });
+        }
+
+        /// <summary>
+        /// Sla de landingspagina-URL op
+        /// PUT /api/qrcode/landing-url
+        /// </summary>
+        [HttpPut("landing-url")]
+        public async Task<IActionResult> SaveLandingUrl([FromBody] LandingUrlRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Url))
+                return BadRequest(new { message = "Url is required" });
+
+            var url = request.Url.Trim();
+
+            var setting = await _context.AppSettings
+                .FirstOrDefaultAsync(s => s.Key == LandingPageUrlKey);
+
+            if (setting == null)
+            {
+                setting = new AppSetting
+                {
+                    Key = LandingPageUrlKey,
+                    Value = url,
+                    UpdatedAt = System.DateTime.UtcNow
+                };
+                _context.AppSettings.Add(setting);
+            }
+            else
+            {
+                setting.Value = url;
+                setting.UpdatedAt = System.DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { url = setting.Value, updatedAt = setting.UpdatedAt });
+        }
+
+        public class LandingUrlRequest
+        {
+            public string? Url { get; set; }
         }
     }
 }

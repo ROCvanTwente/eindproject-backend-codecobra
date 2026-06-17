@@ -18,8 +18,9 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
     public DbSet<TourStop> TourStops { get; set; }
     public DbSet<Media> Medias { get; set; }
 	public DbSet<Pronunciation> Pronunciations { get; set; }
+    public DbSet<AppSetting> AppSettings { get; set; }
 
-	protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
