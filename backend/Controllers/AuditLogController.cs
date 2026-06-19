@@ -1,11 +1,12 @@
 using backend.Data;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/audit-logs")]
     public class AuditLogController : ControllerBase
     {
         private readonly AppDbContext _db;
@@ -13,6 +14,17 @@ namespace backend.Controllers
         public AuditLogController(AppDbContext db)
         {
             _db = db;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UserActionLog>>> GetHistory()
+        {
+            var logs = await _db.UserActionLogs
+                .OrderByDescending(x => x.OccurredAtUtc)
+                .ThenByDescending(x => x.CreatedAtUtc)
+                .ToListAsync();
+
+            return Ok(logs);
         }
 
         [HttpPost]
@@ -23,7 +35,6 @@ namespace backend.Controllers
                 return BadRequest("Request body cannot be null.");
             }
 
-            // Fallback chain: Token Name -> Request Body Actor -> Anonymous
             var actorFromToken = HttpContext.User?.Identity?.Name;
             var finalActor = string.IsNullOrWhiteSpace(actorFromToken)
                 ? (string.IsNullOrWhiteSpace(request.Actor) ? "Anonymous" : request.Actor)
@@ -44,6 +55,15 @@ namespace backend.Controllers
 
             await _db.SaveChangesAsync();
             return Ok();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> ClearHistory()
+        {
+            var logs = await _db.UserActionLogs.ToListAsync();
+            _db.UserActionLogs.RemoveRange(logs);
+            await _db.SaveChangesAsync();
+            return NoContent();
         }
     }
 }
