@@ -19,6 +19,7 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
     public DbSet<Media> Medias { get; set; }
 	public DbSet<Pronunciation> Pronunciations { get; set; }
     public DbSet<UserActionLog> UserActionLogs { get; internal set; }
+    public DbSet<AppSetting> AppSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
