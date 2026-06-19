@@ -20,7 +20,7 @@ public class AppDbContext : IdentityDbContext<IdentityUser, IdentityRole, string
 	public DbSet<Pronunciation> Pronunciations { get; set; }
     public DbSet<UserActionLog> UserActionLogs { get; internal set; }
 
-	protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
