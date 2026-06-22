@@ -21,8 +21,4 @@
     <PackageReference Include="NuGet.Protocol" Version="6.12.5" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
-
 </Project>
