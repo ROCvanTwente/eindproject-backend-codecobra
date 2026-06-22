@@ -60,6 +60,32 @@ builder.Services.AddScoped<IQRCodeStatisticService, QRCodeStatisticService>();
 
 var app = builder.Build();
 
+// Seed admin account na migraties
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    if (!await roleManager.RoleExistsAsync("Admin"))
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+    if (await userManager.FindByNameAsync("admin") == null)
+    {
+        var adminUser = new IdentityUser
+        {
+            UserName = "admin",
+            Email = "admin@admin.com",
+            EmailConfirmed = true
+        };
+        var result = await userManager.CreateAsync(adminUser, "Test-123");
+        if (result.Succeeded)
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+}
+
 if (!app.Environment.IsDevelopment())
 {
 	app.UseExceptionHandler("/Home/Error");
