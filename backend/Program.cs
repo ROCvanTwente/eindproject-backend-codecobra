@@ -54,12 +54,6 @@ builder.Services.AddCors(options =>
 			.AllowCredentials();
 	});
 });
-
-builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<IQRCodeStatisticService, QRCodeStatisticService>();
-
-var app = builder.Build();
-
 // Seed admin account na migraties
 using (var scope = app.Services.CreateScope())
 {
@@ -85,6 +79,11 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 }
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IQRCodeStatisticService, QRCodeStatisticService>();
+
+var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
