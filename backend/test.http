@@ -1,0 +1,53 @@
+### 1. QR Code aanmaken
+POST https://digitalworkplacetestapi.runasp.net/api/qrcode/add
+Content-Type: application/json
+
+{
+  "code": "TEST001",
+  "name": "Test Stop Amsterdam"
+}
+
+###
+
+### 2. Alle QR codes ophalen
+GET https://digitalworkplacetestapi.runasp.net/api/qrcode/all
+
+###
+
+### 3. Scan registreren (+1)
+POST https://digitalworkplacetestapi.runasp.net/api/qrcode/scan
+Content-Type: application/json
+
+{
+  "qrCode": "TEST001"
+}
+
+###
+
+### 4. Statistieken ophalen
+GET https://digitalworkplacetestapi.runasp.net/api/qrcode/statistics/1
+
+###
+
+### 5. Specifieke QR ophalen
+GET https://digitalworkplacetestapi.runasp.net/api/qrcode/1
+
+###
+
+### 6. QR code verwijderen
+DELETE https://digitalworkplacetestapi.runasp.net/api/qrcode/delete/1
+
+###
+
+### 7. Tweede scan registreren (check +1)
+POST https://digitalworkplacetestapi.runasp.net/api/qrcode/scan
+Content-Type: application/json
+
+{
+  "qrCode": "TEST001"
+}
+
+###
+
+### 8. Alle QR codes opnieuw ophalen (check of TEST001 er nog is)
+GET https://digitalworkplacetestapi.runasp.net/api/qrcode/all
